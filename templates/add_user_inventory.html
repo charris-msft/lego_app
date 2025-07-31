@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Add to Collection - LEGO Collection Manager{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="bi bi-plus-circle"></i> Add Set to Your Collection
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.set_num.id }}" class="form-label">LEGO Set</label>
+                                {{ form.set_num(class="form-select") }}
+                                {% if form.set_num.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.set_num.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.quantity.id }}" class="form-label">Quantity</label>
+                                {{ form.quantity(class="form-control", value="1") }}
+                                {% if form.quantity.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.quantity.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.build_status.id }}" class="form-label">Build Status</label>
+                                {{ form.build_status(class="form-select") }}
+                                {% if form.build_status.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.build_status.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.display_location.id }}" class="form-label">Display Location</label>
+                                {{ form.display_location(class="form-control", placeholder="e.g., Living room shelf, Bedroom desk...") }}
+                                {% if form.display_location.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.display_location.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.notes.id }}" class="form-label">Notes</label>
+                            {{ form.notes(class="form-control", rows="3", placeholder="Any special notes about this set...") }}
+                            {% if form.notes.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.notes.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('user_inventory') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to Collection
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus"></i> Add to Collection
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Help Section -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-question-circle"></i> Tips
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-search"></i> Finding Your Set</h6>
+                            <p class="small text-muted">
+                                Use the dropdown to search for your LEGO set. Start typing the set number or name to filter the results.
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-gear"></i> Build Status</h6>
+                            <p class="small text-muted">
+                                Track whether your set is built, unbuilt, or partially assembled to better organize your collection.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Make the set select searchable
+document.addEventListener('DOMContentLoaded', function() {
+    const setSelect = document.getElementById('{{ form.set_num.id }}');
+    
+    // Add search functionality to the select dropdown
+    setSelect.addEventListener('input', function() {
+        // This would be enhanced with a proper search library in production
+        // For now, we rely on browser's built-in filtering
+    });
+    
+    // Auto-focus the set selection dropdown
+    setSelect.focus();
+});
+</script>
+{% endblock %}

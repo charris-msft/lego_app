@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory Parts - LEGO Collection Manager{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-list-check"></i> Inventory Parts</h1>
+    </div>
+
+    <!-- Search -->
+    <div class="search-container">
+        <form method="GET" class="row g-3">
+            <div class="col-md-10">
+                <label for="search" class="form-label">Search Inventory Parts</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       value="{{ search }}" placeholder="Search by part name, part number, or color...">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Count -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <p class="text-muted mb-0">
+            Showing page {{ page }} of {{ total_pages }}
+            {% if search %}
+                (filtered results)
+            {% endif %}
+        </p>
+        {% if search %}
+            <a href="{{ url_for('inventory_parts') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-x"></i> Clear Search
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Inventory Parts Table -->
+    {% if inventory_parts %}
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Part</th>
+                                <th>Category</th>
+                                <th>Color</th>
+                                <th>Set</th>
+                                <th>Quantity</th>
+                                <th>Spare</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in inventory_parts %}
+                            <tr>
+                                <td>
+                                    <div>
+                                        <strong class="text-primary">{{ item.part_num }}</strong><br>
+                                        <small class="text-muted">{{ item.part_name }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ item.category_name }}</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="color-swatch" style="background-color: #{{ item.color_rgb }};"></div>
+                                        <div>
+                                            <strong>{{ item.color_name }}</strong><br>
+                                            <small class="text-muted">#{{ item.color_rgb }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{ item.set_num }}</span>
+                                    {% if item.version > 1 %}
+                                        <small class="text-muted">v{{ item.version }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary rounded-pill">{{ item.quantity }}</span>
+                                </td>
+                                <td>
+                                    {% if item.is_spare %}
+                                        <span class="badge bg-warning">
+                                            <i class="bi bi-star"></i> Spare
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">Regular</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" 
+                                            onclick="viewPartInventoryDetails('{{ item.part_num }}', '{{ item.color_name }}', '{{ item.set_num }}')">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+        <div class="d-flex justify-content-center mt-4">
+            <nav aria-label="Inventory parts pagination">
+                <ul class="pagination">
+                    {% if page > 1 %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('inventory_parts', page=page-1, search=search) }}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for p in range(1, total_pages + 1) %}
+                        {% if p == page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ p }}</span>
+                            </li>
+                        {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('inventory_parts', page=p, search=search) }}">{{ p }}</a>
+                            </li>
+                        {% elif p == page - 3 or p == page + 3 %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page < total_pages %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('inventory_parts', page=page+1, search=search) }}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-list-check feature-icon"></i>
+            <h3>No Inventory Parts Found</h3>
+            <p class="text-muted">
+                {% if search %}
+                    Try adjusting your search criteria.
+                {% else %}
+                    No inventory parts available in the database.
+                {% endif %}
+            </p>
+            {% if search %}
+                <a href="{{ url_for('inventory_parts') }}" class="btn btn-primary">
+                    <i class="bi bi-arrow-left"></i> Show All Inventory Parts
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<!-- Part Inventory Details Modal -->
+<div class="modal fade" id="partInventoryModal" tabindex="-1" aria-labelledby="partInventoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="partInventoryModalLabel">Part Inventory Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="partInventoryContent">
+                <div class="text-center py-3">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function viewPartInventoryDetails(partNum, colorName, setNum) {
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('partInventoryModal'));
+    modal.show();
+    
+    // Update modal content
+    document.getElementById('partInventoryContent').innerHTML = `
+        <div class="py-3">
+            <h4>Part ${partNum} in ${colorName}</h4>
+            <h6 class="text-muted">From Set ${setNum}</h6>
+            
+            <div class="alert alert-info mt-3">
+                <i class="bi bi-info-circle"></i>
+                This is a placeholder for detailed inventory information. In a full implementation, this would show:
+                <ul class="mt-2">
+                    <li>Part image in the specific color</li>
+                    <li>Detailed specifications</li>
+                    <li>Usage across different sets</li>
+                    <li>Quantity analysis</li>
+                    <li>Related parts and alternatives</li>
+                </ul>
+            </div>
+        </div>
+    `;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}My Collection - LEGO Collection Manager{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-box"></i> My LEGO Collection</h1>
+        <a href="{{ url_for('add_user_inventory') }}" class="btn btn-primary">
+            <i class="bi bi-plus"></i> Add Set
+        </a>
+    </div>
+
+    {% if inventory %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Your Sets ({{ inventory|length }} sets)</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Set</th>
+                                <th>Theme</th>
+                                <th>Year</th>
+                                <th>Parts</th>
+                                <th>Quantity</th>
+                                <th>Status</th>
+                                <th>Location</th>
+                                <th>Date Added</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in inventory %}
+                            <tr>
+                                <td>
+                                    <div>
+                                        <strong class="text-primary">{{ item.set_num }}</strong><br>
+                                        <small class="text-muted">{{ item.set_name }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if item.theme_name %}
+                                        <span class="badge bg-secondary">{{ item.theme_name }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.year %}
+                                        <span class="badge bg-info">{{ item.year }}</span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.num_parts %}
+                                        <span class="badge bg-light text-dark">
+                                            <i class="bi bi-puzzle"></i> {{ item.num_parts }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary rounded-pill">{{ item.quantity }}</span>
+                                </td>
+                                <td>
+                                    {% if item.build_status %}
+                                        {% set status_class = 'success' if item.build_status == 'built' else 'warning' if item.build_status == 'unbuilt' else 'info' %}
+                                        <span class="badge bg-{{ status_class }}">
+                                            {% if item.build_status == 'built' %}
+                                                <i class="bi bi-check-circle"></i>
+                                            {% elif item.build_status == 'unbuilt' %}
+                                                <i class="bi bi-clock"></i>
+                                            {% else %}
+                                                <i class="bi bi-gear"></i>
+                                            {% endif %}
+                                            {{ item.build_status.title() }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.display_location %}
+                                        <small class="text-muted">{{ item.display_location }}</small>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.date_acquired %}
+                                        {{ item.date_acquired.strftime('%m/%d/%Y') }}
+                                    {% else %}
+                                        <span class="text-muted">Unknown</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button" class="btn btn-outline-primary" 
+                                                onclick="viewSetNotes({{ item.id }}, '{{ item.set_num }}', '{{ item.notes or '' }}')">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-warning">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger" 
+                                                onclick="confirmDelete({{ item.id }}, '{{ item.set_num }}')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <span class="stat-number">{{ inventory|length }}</span>
+                    <div class="stat-label">Total Sets</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <span class="stat-number">{{ inventory|selectattr('build_status', 'equalto', 'built')|list|length }}</span>
+                    <div class="stat-label">Built Sets</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <span class="stat-number">{{ inventory|selectattr('build_status', 'equalto', 'unbuilt')|list|length }}</span>
+                    <div class="stat-label">Unbuilt Sets</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <span class="stat-number">{{ inventory|sum(attribute='num_parts') or 0 }}</span>
+                    <div class="stat-label">Total Parts</div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-box feature-icon"></i>
+            <h3>Your Collection is Empty</h3>
+            <p class="text-muted">Start building your LEGO collection by adding your first set!</p>
+            <a href="{{ url_for('add_user_inventory') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-plus"></i> Add Your First Set
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Notes Modal -->
+<div class="modal fade" id="notesModal" tabindex="-1" aria-labelledby="notesModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="notesModalLabel">Set Notes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="notesContent">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="deleteContent">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function viewSetNotes(id, setNum, notes) {
+    document.getElementById('notesModalLabel').textContent = `Notes for Set ${setNum}`;
+    document.getElementById('notesContent').innerHTML = notes ? 
+        `<p>${notes}</p>` : 
+        '<p class="text-muted">No notes available for this set.</p>';
+    
+    const modal = new bootstrap.Modal(document.getElementById('notesModal'));
+    modal.show();
+}
+
+function confirmDelete(id, setNum) {
+    document.getElementById('deleteContent').innerHTML = 
+        `Are you sure you want to remove set <strong>${setNum}</strong> from your collection? This action cannot be undone.`;
+    
+    document.getElementById('confirmDeleteBtn').onclick = function() {
+        // In a real implementation, this would make an AJAX call to delete the item
+        alert(`Delete functionality would be implemented here for set ${setNum} (ID: ${id})`);
+        bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+    };
+    
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+</script>
+{% endblock %}

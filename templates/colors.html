@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}LEGO Colors - LEGO Collection Manager{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-palette"></i> LEGO Colors</h1>
+    </div>
+
+    {% if colors %}
+        <div class="row">
+            {% for color in colors %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <!-- Large Color Swatch -->
+                        <div class="mx-auto mb-3" 
+                             style="width: 80px; height: 80px; background-color: #{{ color.rgb }}; 
+                                    border-radius: 50%; border: 3px solid #ddd; 
+                                    box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></div>
+                        
+                        <h5 class="card-title">{{ color.name }}</h5>
+                        
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Color ID: {{ color.id }}</small>
+                            <small class="text-muted d-block">RGB: #{{ color.rgb }}</small>
+                            {% if color.is_trans == 't' %}
+                                <span class="badge bg-info mt-1">
+                                    <i class="bi bi-eye"></i> Transparent
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="text-center">
+                            <span class="badge bg-primary">
+                                {{ color.usage_count }} uses
+                            </span>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <button class="btn btn-outline-primary btn-sm w-100" 
+                                    onclick="viewColorDetails('{{ color.name }}', '{{ color.rgb }}', {{ color.usage_count }}, '{{ color.is_trans }}')">
+                                <i class="bi bi-info-circle"></i> View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Color Statistics -->
+        <div class="row mt-5">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <span class="stat-number">{{ colors|length }}</span>
+                    <div class="stat-label">Total Colors</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <span class="stat-number">{{ colors|selectattr('is_trans', 'equalto', 't')|list|length }}</span>
+                    <div class="stat-label">Transparent Colors</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <span class="stat-number">{{ colors|selectattr('usage_count', 'greaterthan', 0)|list|length }}</span>
+                    <div class="stat-label">Used Colors</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <span class="stat-number">{{ colors|sum(attribute='usage_count') }}</span>
+                    <div class="stat-label">Total Usage</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popular Colors Section -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-star"></i> Most Used Colors
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for color in colors[:12] %}
+                    {% if color.usage_count > 0 %}
+                    <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <div style="width: 40px; height: 40px; background-color: #{{ color.rgb }}; 
+                                        border-radius: 50%; border: 2px solid #ddd; margin-right: 15px;
+                                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></div>
+                            <div>
+                                <strong>{{ color.name }}</strong><br>
+                                <small class="text-muted">{{ color.usage_count }} uses</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-palette feature-icon"></i>
+            <h3>No Colors Found</h3>
+            <p class="text-muted">No LEGO colors available in the database.</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Color Details Modal -->
+<div class="modal fade" id="colorDetailsModal" tabindex="-1" aria-labelledby="colorDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="colorDetailsModalLabel">Color Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="colorDetailsContent">
+                <div class="text-center py-3">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function viewColorDetails(colorName, rgb, usageCount, isTrans) {
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('colorDetailsModal'));
+    modal.show();
+    
+    // Update modal content
+    document.getElementById('colorDetailsContent').innerHTML = `
+        <div class="text-center py-3">
+            <div class="mx-auto mb-4" 
+                 style="width: 120px; height: 120px; background-color: #${rgb}; 
+                        border-radius: 50%; border: 4px solid #ddd; 
+                        box-shadow: 0 6px 12px rgba(0,0,0,0.2);"></div>
+            
+            <h3>${colorName}</h3>
+            <p class="text-muted">RGB: #${rgb}</p>
+            
+            ${isTrans === 't' ? '<span class="badge bg-info mb-3"><i class="bi bi-eye"></i> Transparent</span>' : ''}
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="stat-card">
+                        <span class="stat-number">${usageCount}</span>
+                        <div class="stat-label">Times Used</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="stat-card">
+                        <span class="stat-number">#${rgb}</span>
+                        <div class="stat-label">Hex Code</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4">
+                <i class="bi bi-info-circle"></i>
+                This is a placeholder for detailed color information. In a full implementation, this would show:
+                <ul class="mt-2 text-start">
+                    <li>Color history and variations</li>
+                    <li>Parts available in this color</li>
+                    <li>Sets featuring this color</li>
+                    <li>Similar colors</li>
+                    <li>Color usage trends</li>
+                </ul>
+            </div>
+        </div>
+    `;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}LEGO Parts - LEGO Collection Manager{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-puzzle"></i> LEGO Parts</h1>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="search-container">
+        <form method="GET" class="row g-3">
+            <div class="col-md-6">
+                <label for="search" class="form-label">Search Parts</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       value="{{ search }}" placeholder="Search by name or part number...">
+            </div>
+            <div class="col-md-4">
+                <label for="category" class="form-label">Filter by Category</label>
+                <select class="form-select" id="category" name="category">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.name }}" {% if category_filter == category.name %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Count -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <p class="text-muted mb-0">
+            Showing page {{ page }} of {{ total_pages }}
+            {% if search or category_filter %}
+                (filtered results)
+            {% endif %}
+        </p>
+        {% if search or category_filter %}
+            <a href="{{ url_for('parts') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-x"></i> Clear Filters
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Parts Grid -->
+    {% if parts %}
+        <div class="row">
+            {% for part in parts %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h6 class="card-title mb-0 text-primary">{{ part.part_num }}</h6>
+                            <span class="badge bg-secondary">{{ part.category_name }}</span>
+                        </div>
+                        
+                        <h5 class="card-subtitle mb-3">{{ part.name }}</h5>
+                        
+                        <div class="text-center">
+                            <!-- Placeholder for part image -->
+                            <div class="bg-light rounded d-flex align-items-center justify-content-center mb-3" 
+                                 style="height: 120px;">
+                                <i class="bi bi-puzzle text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                            
+                            <button class="btn btn-outline-primary btn-sm w-100" 
+                                    onclick="viewPartDetails('{{ part.part_num }}')">
+                                <i class="bi bi-info-circle"></i> View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+        <div class="d-flex justify-content-center mt-4">
+            <nav aria-label="Parts pagination">
+                <ul class="pagination">
+                    {% if page > 1 %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('parts', page=page-1, search=search, category=category_filter) }}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for p in range(1, total_pages + 1) %}
+                        {% if p == page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ p }}</span>
+                            </li>
+                        {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('parts', page=p, search=search, category=category_filter) }}">{{ p }}</a>
+                            </li>
+                        {% elif p == page - 3 or p == page + 3 %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page < total_pages %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('parts', page=page+1, search=search, category=category_filter) }}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-puzzle feature-icon"></i>
+            <h3>No Parts Found</h3>
+            <p class="text-muted">
+                {% if search or category_filter %}
+                    Try adjusting your search criteria or clearing the filters.
+                {% else %}
+                    No LEGO parts available in the database.
+                {% endif %}
+            </p>
+            {% if search or category_filter %}
+                <a href="{{ url_for('parts') }}" class="btn btn-primary">
+                    <i class="bi bi-arrow-left"></i> Show All Parts
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<!-- Part Details Modal -->
+<div class="modal fade" id="partDetailsModal" tabindex="-1" aria-labelledby="partDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="partDetailsModalLabel">Part Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="partDetailsContent">
+                <div class="text-center py-3">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function viewPartDetails(partNum) {
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('partDetailsModal'));
+    modal.show();
+    
+    // Update modal content with part information
+    document.getElementById('partDetailsContent').innerHTML = `
+        <div class="text-center py-3">
+            <h4>Part ${partNum}</h4>
+            <p class="text-muted">Detailed information about this LEGO part would be displayed here.</p>
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i>
+                This is a placeholder for part details. In a full implementation, this would show:
+                <ul class="mt-2 text-start">
+                    <li>Part images and 3D renders</li>
+                    <li>Available colors</li>
+                    <li>Sets that include this part</li>
+                    <li>Alternative part numbers</li>
+                    <li>Compatibility information</li>
+                </ul>
+            </div>
+        </div>
+    `;
+}
+</script>
+{% endblock %}

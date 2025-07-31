@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Error - LEGO Collection Manager{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="text-center">
+                <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 4rem;"></i>
+                
+                <h1 class="mt-3">Oops! Something went wrong</h1>
+                
+                {% if error_message %}
+                    <div class="alert alert-danger mt-4">
+                        {{ error_message }}
+                    </div>
+                {% else %}
+                    <p class="text-muted mt-3">
+                        We encountered an unexpected error. Please try again later.
+                    </p>
+                {% endif %}
+                
+                <div class="mt-4">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary">
+                        <i class="bi bi-house"></i> Back to Dashboard
+                    </a>
+                    <button onclick="history.back()" class="btn btn-outline-secondary ms-2">
+                        <i class="bi bi-arrow-left"></i> Go Back
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

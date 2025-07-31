@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container">
+        <h1 class="hero-title">
+            Welcome to Your LEGO Collection 
+            <span class="lego-brick">🧱</span>
+        </h1>
+        <p class="hero-subtitle">Manage your LEGO sets, parts, and inventory with style!</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Statistics Cards -->
+    <div class="row mb-5">
+        <div class="col-md-2 mb-3">
+            <div class="stat-card">
+                <span class="stat-number">{{ stats.total_sets | default(0) }}</span>
+                <div class="stat-label">Total Sets</div>
+            </div>
+        </div>
+        <div class="col-md-2 mb-3">
+            <div class="stat-card">
+                <span class="stat-number">{{ stats.user_sets | default(0) }}</span>
+                <div class="stat-label">My Sets</div>
+            </div>
+        </div>
+        <div class="col-md-2 mb-3">
+            <div class="stat-card">
+                <span class="stat-number">{{ stats.total_parts | default(0) }}</span>
+                <div class="stat-label">Unique Parts</div>
+            </div>
+        </div>
+        <div class="col-md-2 mb-3">
+            <div class="stat-card">
+                <span class="stat-number">{{ (stats.total_inventory_parts / 1000) | round(1) }}K</span>
+                <div class="stat-label">Inventory Parts</div>
+            </div>
+        </div>
+        <div class="col-md-2 mb-3">
+            <div class="stat-card">
+                <span class="stat-number">{{ stats.total_colors | default(0) }}</span>
+                <div class="stat-label">Colors</div>
+            </div>
+        </div>
+        <div class="col-md-2 mb-3">
+            <div class="stat-card">
+                <span class="stat-number">{{ stats.total_themes | default(0) }}</span>
+                <div class="stat-label">Themes</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Inventory -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i> Recent Additions to My Collection
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_inventory %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Set</th>
+                                        <th>Theme</th>
+                                        <th>Quantity</th>
+                                        <th>Status</th>
+                                        <th>Date Added</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in recent_inventory %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ item.set_num }}</strong><br>
+                                            <small class="text-muted">{{ item.set_name }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ item.theme_name or 'Unknown' }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">{{ item.quantity }}</span>
+                                        </td>
+                                        <td>
+                                            {% if item.build_status %}
+                                                <span class="badge bg-{% if item.build_status == 'built' %}success{% elif item.build_status == 'unbuilt' %}warning{% else %}info{% endif %}">
+                                                    {{ item.build_status.title() }}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if item.date_acquired %}
+                                                {{ item.date_acquired.strftime('%m/%d/%Y') }}
+                                            {% else %}
+                                                <span class="text-muted">Unknown</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-end">
+                            <a href="{{ url_for('user_inventory') }}" class="btn btn-outline-primary">
+                                View All <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="bi bi-box feature-icon"></i>
+                            <h5>No Sets in Collection Yet</h5>
+                            <p class="text-muted">Start building your collection!</p>
+                            <a href="{{ url_for('add_user_inventory') }}" class="btn btn-primary">
+                                <i class="bi bi-plus"></i> Add Your First Set
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Popular Themes -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-star"></i> Popular Themes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if popular_themes %}
+                        {% for theme in popular_themes %}
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <strong>{{ theme.name }}</strong>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">{{ theme.set_count }} sets</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="bi bi-collection text-muted" style="font-size: 2rem;"></i>
+                            <p class="text-muted mt-2">No themes found</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning"></i> Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('add_user_inventory') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-plus-circle d-block mb-2" style="font-size: 2rem;"></i>
+                                Add to Collection
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('sets') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-search d-block mb-2" style="font-size: 2rem;"></i>
+                                Browse Sets
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('parts') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-puzzle d-block mb-2" style="font-size: 2rem;"></i>
+                                Explore Parts
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('colors') }}" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-palette d-block mb-2" style="font-size: 2rem;"></i>
+                                View Colors
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
