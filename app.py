@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
@@ -447,6 +447,21 @@ def colors():
         app.logger.error(f"Colors view error: {e}")
         flash(f'Error loading colors: {e}', 'error')
         return render_template('error.html')
+
+@app.route('/hand_choice', methods=['GET', 'POST'])
+def hand_choice():
+    """Test feature: choose a hand, left or right"""
+    if request.method == 'POST':
+        hand_preference = request.form.get('hand_preference')
+        if hand_preference in ['left', 'right']:
+            session['hand_preference'] = hand_preference
+            flash(f'Hand preference set to {hand_preference} hand!', 'success')
+        else:
+            flash('Invalid hand preference selected', 'error')
+        return redirect(url_for('hand_choice'))
+    
+    current_preference = session.get('hand_preference', None)
+    return render_template('hand_choice.html', current_preference=current_preference)
 
 @app.errorhandler(404)
 def not_found(error):

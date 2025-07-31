@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Hand Choice Test - LEGO Collection Manager{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-hand-thumbs-up"></i> Hand Choice Test</h1>
+    </div>
+
+    <!-- Current Preference Display -->
+    {% if current_preference %}
+    <div class="alert alert-success mb-4">
+        <i class="bi bi-check-circle"></i>
+        <strong>Current Preference:</strong> {{ current_preference.title() }} Hand
+    </div>
+    {% endif %}
+
+    <!-- Hand Choice Form -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-question-circle"></i> Choose Your Preferred Hand
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        This is a test feature to demonstrate hand preference selection. 
+                        Choose which hand you prefer to use:
+                    </p>
+
+                    <form method="POST" class="text-center">
+                        <div class="row g-4">
+                            <!-- Left Hand Option -->
+                            <div class="col-md-6">
+                                <div class="card hand-choice-card {% if current_preference == 'left' %}selected{% endif %}" 
+                                     onclick="selectHand('left')">
+                                    <div class="card-body text-center py-5">
+                                        <i class="bi bi-hand-thumbs-up-fill" style="font-size: 4rem; color: var(--lego-red); transform: scaleX(-1);"></i>
+                                        <h4 class="mt-3">Left Hand</h4>
+                                        <p class="text-muted">I prefer using my left hand</p>
+                                        <input type="radio" name="hand_preference" value="left" 
+                                               {% if current_preference == 'left' %}checked{% endif %} 
+                                               class="form-check-input" style="display: none;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Hand Option -->
+                            <div class="col-md-6">
+                                <div class="card hand-choice-card {% if current_preference == 'right' %}selected{% endif %}" 
+                                     onclick="selectHand('right')">
+                                    <div class="card-body text-center py-5">
+                                        <i class="bi bi-hand-thumbs-up-fill" style="font-size: 4rem; color: var(--lego-red);"></i>
+                                        <h4 class="mt-3">Right Hand</h4>
+                                        <p class="text-muted">I prefer using my right hand</p>
+                                        <input type="radio" name="hand_preference" value="right" 
+                                               {% if current_preference == 'right' %}checked{% endif %} 
+                                               class="form-check-input" style="display: none;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check2"></i> Save Preference
+                            </button>
+                            {% if current_preference %}
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg ms-2">
+                                <i class="bi bi-arrow-left"></i> Back to Dashboard
+                            </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Information Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> About This Test
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">
+                        This is a test implementation of a hand preference selection feature. 
+                        The selection is stored in your session and will be remembered while you browse the application.
+                        In a production implementation, this could be used to:
+                    </p>
+                    <ul class="mt-2">
+                        <li>Customize building instruction layouts</li>
+                        <li>Optimize part placement suggestions</li>
+                        <li>Adjust UI elements for better accessibility</li>
+                        <li>Personalize the user experience</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.hand-choice-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid #e9ecef;
+}
+
+.hand-choice-card:hover {
+    border-color: var(--lego-red);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(210, 0, 28, 0.2);
+}
+
+.hand-choice-card.selected {
+    border-color: var(--lego-red);
+    background: linear-gradient(135deg, #fff 0%, #ffe6e6 100%);
+    box-shadow: 0 5px 15px rgba(210, 0, 28, 0.3);
+}
+</style>
+
+<script>
+function selectHand(hand) {
+    // Clear previous selections
+    document.querySelectorAll('.hand-choice-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    document.querySelectorAll('input[name="hand_preference"]').forEach(input => {
+        input.checked = false;
+    });
+    
+    // Select the clicked option
+    event.currentTarget.classList.add('selected');
+    event.currentTarget.querySelector('input[name="hand_preference"]').checked = true;
+}
+</script>
+{% endblock %}
