@@ -7,6 +7,8 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, SelectField, BooleanField, TextAreaField
 from wtforms.validators import DataRequired, NumberRange, Optional
 import logging
+from azure.identity import DefaultAzureCredential
+import struct
 
 # Load environment variables
 load_dotenv()
@@ -18,16 +20,39 @@ app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-change-in-production')
 DB_CONFIG = {
     'host': 'lego-postgres-server.postgres.database.azure.com',
     'database': 'lego',
-    'user': os.getenv('DB_USER', 'your_username'),  # You'll need to set this
-    'password': os.getenv('DB_PASSWORD', 'your_password'),  # You'll need to set this
+    'user': 'charris@microsoft.com',  # Your Azure AD user
     'port': 5432,
     'sslmode': 'require'
 }
 
-def get_db_connection():
-    """Get database connection"""
+def get_azure_ad_token():
+    """Get Azure AD access token for PostgreSQL"""
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
+        credential = DefaultAzureCredential()
+        token = credential.get_token("https://ossrdbms-aad.database.windows.net")
+        return token.token
+    except Exception as e:
+        app.logger.error(f"Failed to get Azure AD token: {e}")
+        return None
+
+def get_db_connection():
+    """Get database connection using Azure AD managed identity"""
+    try:
+        # Get Azure AD token
+        token = get_azure_ad_token()
+        if not token:
+            app.logger.error("Failed to get Azure AD token")
+            return None
+        
+        # Create connection with token as password
+        conn = psycopg2.connect(
+            host=DB_CONFIG['host'],
+            database=DB_CONFIG['database'],
+            user=DB_CONFIG['user'],
+            password=token,
+            port=DB_CONFIG['port'],
+            sslmode=DB_CONFIG['sslmode']
+        )
         return conn
     except Exception as e:
         app.logger.error(f"Database connection error: {e}")
