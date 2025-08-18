@@ -15,37 +15,37 @@
 <div class="container">
     <!-- Statistics Cards -->
     <div class="row mb-5">
-        <div class="col-md-2 mb-3">
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
             <div class="stat-card">
                 <span class="stat-number">{{ stats.total_sets | default(0) }}</span>
                 <div class="stat-label">Total Sets</div>
             </div>
         </div>
-        <div class="col-md-2 mb-3">
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
             <div class="stat-card">
                 <span class="stat-number">{{ stats.user_sets | default(0) }}</span>
                 <div class="stat-label">My Sets</div>
             </div>
         </div>
-        <div class="col-md-2 mb-3">
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
             <div class="stat-card">
                 <span class="stat-number">{{ stats.total_parts | default(0) }}</span>
                 <div class="stat-label">Unique Parts</div>
             </div>
         </div>
-        <div class="col-md-2 mb-3">
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
             <div class="stat-card">
                 <span class="stat-number">{{ (stats.total_inventory_parts / 1000) | round(1) }}K</span>
                 <div class="stat-label">Inventory Parts</div>
             </div>
         </div>
-        <div class="col-md-2 mb-3">
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
             <div class="stat-card">
                 <span class="stat-number">{{ stats.total_colors | default(0) }}</span>
                 <div class="stat-label">Colors</div>
             </div>
         </div>
-        <div class="col-md-2 mb-3">
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
             <div class="stat-card">
                 <span class="stat-number">{{ stats.total_themes | default(0) }}</span>
                 <div class="stat-label">Themes</div>
@@ -168,25 +168,25 @@
                 </div>
                 <div class="card-body">
                     <div class="row text-center">
-                        <div class="col-md-3 mb-3">
+                        <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
                             <a href="{{ url_for('add_user_inventory') }}" class="btn btn-outline-primary w-100">
                                 <i class="bi bi-plus-circle d-block mb-2" style="font-size: 2rem;"></i>
                                 Add to Collection
                             </a>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
                             <a href="{{ url_for('sets') }}" class="btn btn-outline-primary w-100">
                                 <i class="bi bi-search d-block mb-2" style="font-size: 2rem;"></i>
                                 Browse Sets
                             </a>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
                             <a href="{{ url_for('parts') }}" class="btn btn-outline-primary w-100">
                                 <i class="bi bi-puzzle d-block mb-2" style="font-size: 2rem;"></i>
                                 Explore Parts
                             </a>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
                             <a href="{{ url_for('colors') }}" class="btn btn-outline-primary w-100">
                                 <i class="bi bi-palette d-block mb-2" style="font-size: 2rem;"></i>
                                 View Colors
