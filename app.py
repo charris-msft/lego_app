@@ -16,33 +16,60 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-change-in-production')
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler('app.log')
+    ]
+)
+
 # Database connection configuration
 DB_CONFIG = {
-    'host': 'lego-postgres-server.postgres.database.azure.com',
-    'database': 'lego',
-    'user': 'charris@microsoft.com',  # Your Azure AD user
-    'port': 5432,
-    'sslmode': 'require'
+    'host': os.getenv('DB_HOST', 'lego-postgres-server.postgres.database.azure.com'),
+    'database': os.getenv('DB_NAME', 'lego'),
+    'user': os.getenv('AZURE_AD_USER', 'charris@microsoft.com'),
+    'port': int(os.getenv('DB_PORT', 5432)),
+    'sslmode': os.getenv('DB_SSLMODE', 'require')
 }
 
 def get_azure_ad_token():
     """Get Azure AD access token for PostgreSQL"""
     try:
-        credential = DefaultAzureCredential()
+        app.logger.info("Attempting to acquire Azure AD token...")
+        
+        # Try different credential types in order of preference
+        credential = DefaultAzureCredential(
+            exclude_visual_studio_code_credential=False,
+            exclude_cli_credential=False,
+            exclude_environment_credential=False,
+            exclude_managed_identity_credential=False,
+            exclude_shared_token_cache_credential=False,
+            exclude_interactive_browser_credential=True  # Avoid browser popup in web app
+        )
+        
         token = credential.get_token("https://ossrdbms-aad.database.windows.net")
+        app.logger.info("Azure AD token acquired successfully")
         return token.token
     except Exception as e:
         app.logger.error(f"Failed to get Azure AD token: {e}")
+        app.logger.error(f"Exception type: {type(e).__name__}")
         return None
 
 def get_db_connection():
-    """Get database connection using Azure AD managed identity"""
+    """Get database connection using Azure AD authentication"""
     try:
+        app.logger.info(f"Attempting database connection to {DB_CONFIG['host']}")
+        
         # Get Azure AD token
         token = get_azure_ad_token()
         if not token:
             app.logger.error("Failed to get Azure AD token")
             return None
+        
+        app.logger.info(f"Connecting with user: {DB_CONFIG['user']}")
         
         # Create connection with token as password
         conn = psycopg2.connect(
@@ -51,11 +78,25 @@ def get_db_connection():
             user=DB_CONFIG['user'],
             password=token,
             port=DB_CONFIG['port'],
-            sslmode=DB_CONFIG['sslmode']
+            sslmode=DB_CONFIG['sslmode'],
+            connect_timeout=10
         )
+        
+        app.logger.info("Database connection successful")
         return conn
+        
+    except psycopg2.OperationalError as e:
+        app.logger.error(f"PostgreSQL Operational Error: {e}")
+        if "authentication failed" in str(e).lower():
+            app.logger.error("Authentication failed - check if user has proper Azure AD permissions")
+        elif "ssl" in str(e).lower():
+            app.logger.error("SSL connection issue - check server SSL configuration")
+        elif "timeout" in str(e).lower():
+            app.logger.error("Connection timeout - check network connectivity and firewall")
+        return None
     except Exception as e:
         app.logger.error(f"Database connection error: {e}")
+        app.logger.error(f"Exception type: {type(e).__name__}")
         return None
 
 # Forms
