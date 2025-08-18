@@ -290,6 +290,11 @@
             padding: 1rem;
         }
         
+        /* Ensure smooth transitions */
+        .navbar-collapse.collapsing {
+            transition: height 0.35s ease;
+        }
+        
         /* Responsive card improvements */
         .card {
             margin-bottom: 1rem;
@@ -313,6 +318,11 @@
         .pagination {
             justify-content: center;
             flex-wrap: wrap;
+        }
+        
+        /* Responsive badge sizing */
+        .badge-sm {
+            font-size: 0.75em;
         }
         
         /* Mobile First - Small devices (phones, 576px and down) */
@@ -388,6 +398,28 @@
             .pagination .page-link {
                 padding: 0.5rem 0.75rem;
                 font-size: 0.9rem;
+            }
+            
+            /* Ensure text doesn't get too small on very small screens */
+            body {
+                font-size: 14px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
+            
+            h3 {
+                font-size: 1.1rem;
+            }
+            
+            /* Improve form controls on mobile */
+            .form-control, .form-select {
+                font-size: 16px; /* Prevent zoom on iOS */
             }
         }
         
