@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: lego-app
+metadata:
+    template: azd-init@1.18.2
+services:
+    lego-app:
+        project: .
+        host: containerapp
+        language: python
+resources:
+    lego-app:
+        type: host.containerapp
+        uses:
+            - lego-inventory
+        port: 80
+    lego-inventory:
+        type: db.postgres

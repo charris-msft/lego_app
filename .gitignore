@@ -238,3 +238,4 @@ config.py
 *.bak
 *.backup
 *~
+.azure
