@@ -11,12 +11,12 @@
     <!-- Search and Filter -->
     <div class="search-container">
         <form method="GET" class="row g-3">
-            <div class="col-md-6">
+            <div class="col-12 col-md-6">
                 <label for="search" class="form-label">Search Sets</label>
                 <input type="text" class="form-control" id="search" name="search" 
                        value="{{ search }}" placeholder="Search by name or set number...">
             </div>
-            <div class="col-md-4">
+            <div class="col-12 col-sm-8 col-md-4">
                 <label for="theme" class="form-label">Filter by Theme</label>
                 <select class="form-select" id="theme" name="theme">
                     <option value="">All Themes</option>
@@ -27,25 +27,30 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-2 d-flex align-items-end">
+            <div class="col-12 col-sm-4 col-md-2 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-search"></i> Search
+                    <i class="bi bi-search"></i> 
+                    <span class="d-none d-sm-inline">Search</span>
                 </button>
             </div>
         </form>
     </div>
 
     <!-- Results Count -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-3 gap-2">
         <p class="text-muted mb-0">
-            Showing page {{ page }} of {{ total_pages }} 
+            <span class="d-none d-sm-inline">Showing page {{ page }} of {{ total_pages }}</span>
+            <span class="d-sm-none">Page {{ page }}/{{ total_pages }}</span>
             {% if search or theme_filter %}
-                (filtered results)
+                <span class="d-none d-sm-inline">(filtered results)</span>
+                <span class="d-sm-none">(filtered)</span>
             {% endif %}
         </p>
         {% if search or theme_filter %}
             <a href="{{ url_for('sets') }}" class="btn btn-outline-secondary btn-sm">
-                <i class="bi bi-x"></i> Clear Filters
+                <i class="bi bi-x"></i> 
+                <span class="d-none d-sm-inline">Clear Filters</span>
+                <span class="d-sm-none">Clear</span>
             </a>
         {% endif %}
     </div>

@@ -4,10 +4,10 @@
 
 {% block content %}
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1><i class="bi bi-box"></i> My LEGO Collection</h1>
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center mb-4 gap-2">
+        <h1><i class="bi bi-box"></i> <span class="d-none d-sm-inline">My LEGO Collection</span><span class="d-sm-none">My Collection</span></h1>
         <a href="{{ url_for('add_user_inventory') }}" class="btn btn-primary">
-            <i class="bi bi-plus"></i> Add Set
+            <i class="bi bi-plus"></i> <span class="d-none d-sm-inline">Add Set</span><span class="d-sm-none">Add</span>
         </a>
     </div>
 
@@ -22,13 +22,13 @@
                         <thead>
                             <tr>
                                 <th>Set</th>
-                                <th>Theme</th>
-                                <th>Year</th>
-                                <th>Parts</th>
-                                <th>Quantity</th>
-                                <th>Status</th>
-                                <th>Location</th>
-                                <th>Date Added</th>
+                                <th class="d-none d-sm-table-cell">Theme</th>
+                                <th class="d-none d-md-table-cell">Year</th>
+                                <th class="d-none d-lg-table-cell">Parts</th>
+                                <th>Qty</th>
+                                <th class="d-none d-md-table-cell">Status</th>
+                                <th class="d-none d-lg-table-cell">Location</th>
+                                <th class="d-none d-md-table-cell">Date Added</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -38,24 +38,36 @@
                                 <td>
                                     <div>
                                         <strong class="text-primary">{{ item.set_num }}</strong><br>
-                                        <small class="text-muted">{{ item.set_name }}</small>
+                                        <small class="text-muted text-truncate-mobile">{{ item.set_name }}</small>
+                                        <!-- Show status inline on mobile -->
+                                        <div class="d-md-none mt-1">
+                                            {% if item.build_status %}
+                                                {% set status_class = 'success' if item.build_status == 'built' else 'warning' if item.build_status == 'unbuilt' else 'info' %}
+                                                <span class="badge bg-{{ status_class }} badge-sm">
+                                                    {{ item.build_status.title() }}
+                                                </span>
+                                            {% endif %}
+                                            {% if item.theme_name %}
+                                                <span class="badge bg-secondary badge-sm d-sm-none">{{ item.theme_name }}</span>
+                                            {% endif %}
+                                        </div>
                                     </div>
                                 </td>
-                                <td>
+                                <td class="d-none d-sm-table-cell">
                                     {% if item.theme_name %}
                                         <span class="badge bg-secondary">{{ item.theme_name }}</span>
                                     {% else %}
                                         <span class="text-muted">-</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td class="d-none d-md-table-cell">
                                     {% if item.year %}
                                         <span class="badge bg-info">{{ item.year }}</span>
                                     {% else %}
                                         <span class="text-muted">-</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td class="d-none d-lg-table-cell">
                                     {% if item.num_parts %}
                                         <span class="badge bg-light text-dark">
                                             <i class="bi bi-puzzle"></i> {{ item.num_parts }}
@@ -67,7 +79,7 @@
                                 <td>
                                     <span class="badge bg-primary rounded-pill">{{ item.quantity }}</span>
                                 </td>
-                                <td>
+                                <td class="d-none d-md-table-cell">
                                     {% if item.build_status %}
                                         {% set status_class = 'success' if item.build_status == 'built' else 'warning' if item.build_status == 'unbuilt' else 'info' %}
                                         <span class="badge bg-{{ status_class }}">
@@ -84,14 +96,14 @@
                                         <span class="text-muted">-</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td class="d-none d-lg-table-cell">
                                     {% if item.display_location %}
                                         <small class="text-muted">{{ item.display_location }}</small>
                                     {% else %}
                                         <span class="text-muted">-</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td class="d-none d-md-table-cell">
                                     {% if item.date_acquired %}
                                         {{ item.date_acquired.strftime('%m/%d/%Y') }}
                                     {% else %}
@@ -99,7 +111,7 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <div class="btn-group btn-group-sm" role="group">
+                                    <div class="btn-group btn-group-sm d-none d-sm-flex" role="group">
                                         <button type="button" class="btn btn-outline-primary" 
                                                 onclick="viewSetNotes({{ item.id }}, '{{ item.set_num }}', '{{ item.notes or '' }}')">
                                             <i class="bi bi-eye"></i>
@@ -112,6 +124,25 @@
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
+                                    <!-- Mobile dropdown menu -->
+                                    <div class="d-sm-none dropdown">
+                                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" 
+                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="bi bi-three-dots"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#" onclick="viewSetNotes({{ item.id }}, '{{ item.set_num }}', '{{ item.notes or '' }}')">
+                                                <i class="bi bi-eye"></i> View Notes
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="#">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="#" onclick="confirmDelete({{ item.id }}, '{{ item.set_num }}')">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </a></li>
+                                        </ul>
+                                    </div>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -123,25 +154,25 @@
 
         <!-- Summary Stats -->
         <div class="row mt-4">
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <span class="stat-number">{{ inventory|length }}</span>
                     <div class="stat-label">Total Sets</div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <span class="stat-number">{{ inventory|selectattr('build_status', 'equalto', 'built')|list|length }}</span>
                     <div class="stat-label">Built Sets</div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <span class="stat-number">{{ inventory|selectattr('build_status', 'equalto', 'unbuilt')|list|length }}</span>
                     <div class="stat-label">Unbuilt Sets</div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-md-3">
                 <div class="stat-card">
                     <span class="stat-number">{{ inventory|sum(attribute='num_parts') or 0 }}</span>
                     <div class="stat-label">Total Parts</div>

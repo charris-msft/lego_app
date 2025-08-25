@@ -5,11 +5,11 @@
 {% block content %}
 <div class="container mt-4">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-12 col-lg-8">
             <div class="card">
                 <div class="card-header">
                     <h4 class="mb-0">
-                        <i class="bi bi-plus-circle"></i> Add Set to Your Collection
+                        <i class="bi bi-plus-circle"></i> <span class="d-none d-sm-inline">Add Set to Your Collection</span><span class="d-sm-none">Add Set</span>
                     </h4>
                 </div>
                 <div class="card-body">
@@ -17,7 +17,7 @@
                         {{ form.hidden_tag() }}
                         
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="{{ form.set_num.id }}" class="form-label">LEGO Set</label>
                                 {{ form.set_num(class="form-select") }}
                                 {% if form.set_num.errors %}
@@ -29,7 +29,7 @@
                                 {% endif %}
                             </div>
                             
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="{{ form.quantity.id }}" class="form-label">Quantity</label>
                                 {{ form.quantity(class="form-control", value="1") }}
                                 {% if form.quantity.errors %}
@@ -43,7 +43,7 @@
                         </div>
                         
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="{{ form.build_status.id }}" class="form-label">Build Status</label>
                                 {{ form.build_status(class="form-select") }}
                                 {% if form.build_status.errors %}
@@ -55,7 +55,7 @@
                                 {% endif %}
                             </div>
                             
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="{{ form.display_location.id }}" class="form-label">Display Location</label>
                                 {{ form.display_location(class="form-control", placeholder="e.g., Living room shelf, Bedroom desk...") }}
                                 {% if form.display_location.errors %}
@@ -80,12 +80,12 @@
                             {% endif %}
                         </div>
                         
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
                             <a href="{{ url_for('user_inventory') }}" class="btn btn-outline-secondary">
-                                <i class="bi bi-arrow-left"></i> Back to Collection
+                                <i class="bi bi-arrow-left"></i> <span class="d-none d-sm-inline">Back to Collection</span><span class="d-sm-none">Back</span>
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-plus"></i> Add to Collection
+                                <i class="bi bi-plus"></i> <span class="d-none d-sm-inline">Add to Collection</span><span class="d-sm-none">Add</span>
                             </button>
                         </div>
                     </form>
